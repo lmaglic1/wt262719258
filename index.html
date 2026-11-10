@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoTrack</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="zaglavlje">
+    <h1 class="logo">EcoTrack</h1>
+
+    <nav class="meni" aria-label="Glavni meni">
+      <ul>
+        <li><a href="#pregled">Pregled</a></li>
+        <li><a href="#historija">Historija</a></li>
+        <li><a href="#novo-mjerenje">Novo mjerenje</a></li>
+      </ul>
+    </nav>
+
+    <nav class="profil" aria-label="Profil korisnika">
+      <button type="button" class="profil-dugme">Amra Hodžić ▾</button>
+      <ul class="profil-meni">
+        <li><a href="#">Moj profil</a></li>
+        <li><a href="#">Postavke</a></li>
+        <li><a href="#">Odjava</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="raspored">
+    <main>
+      <section id="pregled">
+        <h2>Pregled</h2>
+
+        <ul class="kartice">
+          <li>
+            <article class="kartica">
+              <h3>Ukupna emisija CO2</h3>
+              <p class="vrijednost">1.284,6 t</p>
+              <p>Od početka 2026. godine</p>
+            </article>
+          </li>
+          <li>
+            <article class="kartica">
+              <h3>Ušteda energije</h3>
+              <p class="vrijednost">18,2 %</p>
+              <p>U odnosu na 2025. godinu</p>
+            </article>
+          </li>
+          <li>
+            <article class="kartica">
+              <h3>Status postrojenja: Wasserkraftgrünstromerzeugungsanlagenüberwachungszentrale</h3>
+              <p class="vrijednost">Aktivno</p>
+              <p>Zadnja provjera: 10.11.2026.</p>
+            </article>
+          </li>
+        </ul>
+      </section>
+
+      <section id="historija">
+        <h2>Historija mjerenja</h2>
+
+        <div class="tabela-okvir">
+          <table>
+            <caption>Očitanja potrošnje u 2026. godini</caption>
+            <thead>
+              <tr>
+                <th scope="col">Datum</th>
+                <th scope="col">Energent</th>
+                <th scope="col">Količina</th>
+                <th scope="col">Jedinica</th>
+                <th scope="col">Emisija CO2 (kg)</th>
+                <th scope="col">Incident</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">03.11.2026.</th><td>Struja</td><td>4210,50</td><td>kWh</td><td>1726,31</td><td>Ne</td></tr>
+              <tr><th scope="row">28.10.2026.</th><td>Plin</td><td>812,25</td><td>m3</td><td>1624,50</td><td>Ne</td></tr>
+              <tr><th scope="row">21.10.2026.</th><td>Voda</td><td>96,40</td><td>m3</td><td>32,78</td><td>Da</td></tr>
+              <tr><th scope="row">14.10.2026.</th><td>Struja</td><td>3987,00</td><td>kWh</td><td>1634,67</td><td>Ne</td></tr>
+              <tr><th scope="row">07.10.2026.</th><td>Plin</td><td>790,10</td><td>m3</td><td>1580,20</td><td>Ne</td></tr>
+              <tr><th scope="row">30.09.2026.</th><td>Voda</td><td>101,75</td><td>m3</td><td>34,60</td><td>Ne</td></tr>
+              <tr><th scope="row">23.09.2026.</th><td>Struja</td><td>4402,80</td><td>kWh</td><td>1805,15</td><td>Da</td></tr>
+              <tr><th scope="row">16.09.2026.</th><td>Plin</td><td>655,00</td><td>m3</td><td>1310,00</td><td>Ne</td></tr>
+              <tr><th scope="row">09.09.2026.</th><td>Voda</td><td>88,30</td><td>m3</td><td>30,02</td><td>Ne</td></tr>
+              <tr><th scope="row">02.09.2026.</th><td>Struja</td><td>4120,15</td><td>kWh</td><td>1689,26</td><td>Ne</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="novo-mjerenje">
+        <h2>Novo mjerenje</h2>
+        <p>Polja označena sa <span class="zvjezdica">*</span> su obavezna.</p>
+
+        <form class="forma" action="#" method="post">
+          <div class="polje">
+            <label for="energent">Energent <span class="zvjezdica" aria-hidden="true">*</span></label>
+            <select id="energent" name="energent" required aria-required="true">
+              <option value="">-- Odaberite --</option>
+              <option value="struja">Struja</option>
+              <option value="plin">Plin</option>
+              <option value="voda">Voda</option>
+            </select>
+          </div>
+
+          <div class="polje">
+            <label for="kolicina">Količina <span class="zvjezdica" aria-hidden="true">*</span></label>
+            <input type="number" id="kolicina" name="kolicina" min="0.01" step="0.01" required aria-required="true">
+          </div>
+
+          <div class="polje">
+            <label for="datum">Datum očitanja <span class="zvjezdica" aria-hidden="true">*</span></label>
+            <input type="date" id="datum" name="datum" min="2026-01-01" max="2026-12-31" required aria-required="true">
+          </div>
+
+          <div class="polje-checkbox">
+            <input type="checkbox" id="incident" name="incident">
+            <label for="incident">Hitna intervencija / Incident</label>
+          </div>
+
+          <button type="submit" class="dugme">Spremi</button>
+        </form>
+      </section>
+    </main>
+
+    <aside class="sidebar">
+      <h2>Brzi uvid</h2>
+
+      <section>
+        <h3>Godišnji cilj</h3>
+        <p>Smanjiti emisiju CO2 za 15% do kraja godine.</p>
+      </section>
+
+      <section>
+        <h3>Savjeti</h3>
+        <ul>
+          <li>Isključite uređaje koji se ne koriste.</li>
+          <li>Provjerite curenje vode.</li>
+          <li>Koristite LED rasvjetu.</li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="podnozje">
+    <p>&copy; 2026 EcoTrack</p>
+  </footer>
+
+</body>
+</html>
