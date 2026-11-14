@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EcoTrack</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="js/Evidencija.js" defer></script>
+  <script src="js/app.js" defer></script>
 </head>
 <body>
 
@@ -38,22 +40,22 @@
           <li>
             <article class="kartica">
               <h3>Ukupna emisija CO2</h3>
-              <p class="vrijednost">1.284,6 t</p>
-              <p>Od početka 2026. godine</p>
+              <p class="vrijednost"><span data-testid="kartica-emisija">0</span> kg</p>
+              <p>Zbir za sva mjerenja</p>
             </article>
           </li>
           <li>
             <article class="kartica">
               <h3>Ušteda energije</h3>
-              <p class="vrijednost">18,2 %</p>
-              <p>U odnosu na 2025. godinu</p>
+              <p class="vrijednost"><span data-testid="kartica-usteda">0</span> kg</p>
+              <p>20% od ukupne emisije</p>
             </article>
           </li>
           <li>
             <article class="kartica">
               <h3>Status postrojenja: Wasserkraftgrünstromerzeugungsanlagenüberwachungszentrale</h3>
-              <p class="vrijednost">Aktivno</p>
-              <p>Zadnja provjera: 10.11.2026.</p>
+              <p class="vrijednost" data-testid="kartica-status">Normalno</p>
+              <p>Kritično ako postoji incident</p>
             </article>
           </li>
         </ul>
@@ -63,29 +65,28 @@
         <h2>Historija mjerenja</h2>
 
         <div class="tabela-okvir">
-          <table>
+          <table data-testid="tabela">
             <caption>Očitanja potrošnje u 2026. godini</caption>
             <thead>
               <tr>
-                <th scope="col">Datum</th>
-                <th scope="col">Energent</th>
-                <th scope="col">Količina</th>
-                <th scope="col">Jedinica</th>
-                <th scope="col">Emisija CO2 (kg)</th>
-                <th scope="col">Incident</th>
+                <th scope="col" data-kolona="energent">Energent</th>
+                <th scope="col" data-kolona="kolicina">Količina</th>
+                <th scope="col" data-kolona="datum">Datum</th>
+                <th scope="col" data-kolona="incident">Incident</th>
+                <th scope="col">Akcija</th>
               </tr>
             </thead>
             <tbody>
-              <tr><th scope="row">03.11.2026.</th><td>Struja</td><td>4210,50</td><td>kWh</td><td>1726,31</td><td>Ne</td></tr>
-              <tr><th scope="row">28.10.2026.</th><td>Plin</td><td>812,25</td><td>m3</td><td>1624,50</td><td>Ne</td></tr>
-              <tr><th scope="row">21.10.2026.</th><td>Voda</td><td>96,40</td><td>m3</td><td>32,78</td><td>Da</td></tr>
-              <tr><th scope="row">14.10.2026.</th><td>Struja</td><td>3987,00</td><td>kWh</td><td>1634,67</td><td>Ne</td></tr>
-              <tr><th scope="row">07.10.2026.</th><td>Plin</td><td>790,10</td><td>m3</td><td>1580,20</td><td>Ne</td></tr>
-              <tr><th scope="row">30.09.2026.</th><td>Voda</td><td>101,75</td><td>m3</td><td>34,60</td><td>Ne</td></tr>
-              <tr><th scope="row">23.09.2026.</th><td>Struja</td><td>4402,80</td><td>kWh</td><td>1805,15</td><td>Da</td></tr>
-              <tr><th scope="row">16.09.2026.</th><td>Plin</td><td>655,00</td><td>m3</td><td>1310,00</td><td>Ne</td></tr>
-              <tr><th scope="row">09.09.2026.</th><td>Voda</td><td>88,30</td><td>m3</td><td>30,02</td><td>Ne</td></tr>
-              <tr><th scope="row">02.09.2026.</th><td>Struja</td><td>4120,15</td><td>kWh</td><td>1689,26</td><td>Ne</td></tr>
+              <tr><td>Struja</td><td>4210,50</td><td>03.11.2026</td><td>Ne</td></tr>
+              <tr><td>Plin</td><td>812,25</td><td>28.10.2026</td><td>Ne</td></tr>
+              <tr><td>Voda</td><td>96,40</td><td>21.10.2026</td><td>Da</td></tr>
+              <tr><td>Struja</td><td>3987,00</td><td>14.10.2026</td><td>Ne</td></tr>
+              <tr><td>Plin</td><td>790,10</td><td>07.10.2026</td><td>Ne</td></tr>
+              <tr><td>Voda</td><td>101,75</td><td>30.09.2026</td><td>Ne</td></tr>
+              <tr><td>Struja</td><td>4402,80</td><td>23.09.2026</td><td>Da</td></tr>
+              <tr><td>Plin</td><td>655,00</td><td>16.09.2026</td><td>Ne</td></tr>
+              <tr><td>Voda</td><td>88,30</td><td>09.09.2026</td><td>Ne</td></tr>
+              <tr><td>Struja</td><td>4120,15</td><td>02.09.2026</td><td>Ne</td></tr>
             </tbody>
           </table>
         </div>
@@ -95,10 +96,10 @@
         <h2>Novo mjerenje</h2>
         <p>Polja označena sa <span class="zvjezdica">*</span> su obavezna.</p>
 
-        <form class="forma" action="#" method="post">
+        <form class="forma" action="#" method="post" novalidate data-testid="forma">
           <div class="polje">
             <label for="energent">Energent <span class="zvjezdica" aria-hidden="true">*</span></label>
-            <select id="energent" name="energent" required aria-required="true">
+            <select id="energent" name="energent" data-testid="energent" required aria-required="true">
               <option value="">-- Odaberite --</option>
               <option value="struja">Struja</option>
               <option value="plin">Plin</option>
@@ -108,21 +109,23 @@
 
           <div class="polje">
             <label for="kolicina">Količina <span class="zvjezdica" aria-hidden="true">*</span></label>
-            <input type="number" id="kolicina" name="kolicina" min="0.01" step="0.01" required aria-required="true">
+            <input type="number" id="kolicina" name="kolicina" data-testid="kolicina" min="0.01" step="0.01" required aria-required="true">
           </div>
 
           <div class="polje">
             <label for="datum">Datum očitanja <span class="zvjezdica" aria-hidden="true">*</span></label>
-            <input type="date" id="datum" name="datum" min="2026-01-01" max="2026-12-31" required aria-required="true">
+            <input type="date" id="datum" name="datum" data-testid="datum" min="2026-01-01" max="2026-12-31" required aria-required="true">
           </div>
 
           <div class="polje-checkbox">
-            <input type="checkbox" id="incident" name="incident">
+            <input type="checkbox" id="incident" name="incident" data-testid="incident">
             <label for="incident">Hitna intervencija / Incident</label>
           </div>
 
-          <button type="submit" class="dugme">Spremi</button>
+          <button type="submit" class="dugme" data-testid="submit">Spremi</button>
         </form>
+
+        <div id="poruke" class="poruke" role="status" aria-live="polite" data-testid="poruke"></div>
       </section>
     </main>
 

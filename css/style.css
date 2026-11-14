@@ -333,3 +333,42 @@ thead th {
   color: var(--tekst-sivi);
   border-top: var(--ivica-debljina) solid var(--ivica);
 }
+
+/* ---------- Spirala 2: poruke, brisanje, novi red ---------- */
+.poruke {
+  max-width: var(--sirina-forme);
+  margin-top: var(--razmak);
+  /* svaka greška u svom redu (razdvojene sa \n u textContent) */
+  white-space: pre-line;
+  color: var(--uspjeh);
+}
+
+.poruke--greska {
+  color: var(--greska);
+}
+
+.dugme-obrisi {
+  padding: var(--razmak-malo);
+  font-family: var(--font);
+  font-size: var(--font-malo);
+  color: var(--greska);
+  background-color: var(--povrsina);
+  border: var(--ivica-debljina) solid var(--greska);
+  border-radius: var(--zaobljenje);
+  cursor: pointer;
+}
+
+/* novododani red - kratki fade-in, klasa se uklanja nakon 2 s (app.js) */
+tr.--new {
+  animation: fade-in 1s ease-out;
+  background-color: var(--povrsina-tamnija);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
