@@ -54,8 +54,8 @@ function Evidencija(tabelaRef, opcije) {
         ? vrijednost : null;
     }
     if (typeof vrijednost !== 'string') return null;
-    // trim() uklanja i &nbsp; ( )
-    const tekst = vrijednost.replace(/^[\s ]+|[\s ]+$/g, '');
+    // uklanja whitespace i &nbsp; na početku i kraju
+    const tekst = vrijednost.replace(/^[\s\u00A0]+|[\s\u00A0]+$/g, '');
     if (!/^\d+(?:[.,]\d{1,2})?$/.test(tekst)) return null;
     const broj = parseFloat(tekst.replace(',', '.'));
     return broj > 0 ? broj : null;
@@ -75,7 +75,7 @@ function Evidencija(tabelaRef, opcije) {
       return isNaN(vrijednost.getTime()) ? null : new Date(vrijednost.getTime());
     }
     if (typeof vrijednost !== 'string') return null;
-    const tekst = vrijednost.replace(/^[\s ]+|[\s ]+$/g, '');
+    const tekst = vrijednost.replace(/^[\s\u00A0]+|[\s\u00A0]+$/g, '');
     let dijelovi = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(tekst);
     if (dijelovi) return napraviDatum(+dijelovi[1], +dijelovi[2], +dijelovi[3]);
     dijelovi = /^(\d{1,2})([./])(\d{1,2})\2(\d{4})$/.exec(tekst);
@@ -293,6 +293,162 @@ function Evidencija(tabelaRef, opcije) {
     return mjerenja.length;
   }
 
+  // ---------- Javne metode: analitika ----------
+  function dajUkupnuEmisiju(filter) {
+    const ukupno = filtriraj(filter)
+      .reduce((zbir, m) => zbir + m.kolicina * (Number(faktoriEmisije[m.energent]) || 0), 0);
+    return zaokruzi(ukupno);
+  }
+
+  function izracunajStatistiku() {
+    const statistika = {};
+    ENERGENTI.forEach((energent) => {
+      const kolicine = mjerenja.filter((m) => m.energent === energent).map((m) => m.kolicina);
+      if (kolicine.length === 0) return;
+      const ukupno = kolicine.reduce((a, b) => a + b, 0);
+      statistika[energent] = {
+        broj: kolicine.length,
+        ukupno,
+        prosjek: ukupno / kolicine.length,
+        min: Math.min(...kolicine),
+        max: Math.max(...kolicine)
+      };
+    });
+    return statistika;
+  }
+
+  function dajStatistikuPoEnergentu() {
+    const statistika = izracunajStatistiku();
+    Object.keys(statistika).forEach((energent) => {
+      statistika[energent].ukupno = zaokruzi(statistika[energent].ukupno);
+      statistika[energent].prosjek = zaokruzi(statistika[energent].prosjek);
+    });
+    return statistika;
+  }
+
+  // Period se računa unazad od današnjeg dana (uključujući današnji dan).
+  function prosjecnaPotrosnja(energent, period) {
+    const e = typeof energent === 'string' ? energent.trim().toLowerCase() : '';
+    const danas = new Date();
+    const kraj = new Date(danas.getFullYear(), danas.getMonth(), danas.getDate() + 1);
+    let pocetak;
+    if (period === 'sedmica') pocetak = new Date(kraj.getFullYear(), kraj.getMonth(), kraj.getDate() - 7);
+    else if (period === 'mjesec') pocetak = new Date(kraj.getFullYear(), kraj.getMonth() - 1, kraj.getDate());
+    else if (period === 'godina') pocetak = new Date(kraj.getFullYear() - 1, kraj.getMonth(), kraj.getDate());
+    else return 0;
+
+    const uPeriodu = mjerenja.filter((m) => m.energent === e && m.datum >= pocetak && m.datum < kraj);
+    if (uPeriodu.length === 0) return 0;
+    return zaokruzi(uPeriodu.reduce((zbir, m) => zbir + m.kolicina, 0) / uPeriodu.length);
+  }
+
+  function detektujAnomalije() {
+    const statistika = izracunajStatistiku();
+    const anomalije = [];
+    mjerenja.forEach((m) => {
+      let razlog = null; // prioritet: incident > visoka_potrosnja > negativna_potrosnja
+      if (m.incident) razlog = 'incident';
+      else if (m.kolicina > 3 * statistika[m.energent].prosjek) razlog = 'visoka_potrosnja';
+      else if (m.kolicina < 0) razlog = 'negativna_potrosnja';
+      if (razlog) anomalije.push({ id: m.id, razlog });
+    });
+    return anomalije;
+  }
+
+  function csvPolje(vrijednost) {
+    const tekst = String(vrijednost);
+    return /[",\r\n]/.test(tekst) ? `"${tekst.replace(/"/g, '""')}"` : tekst;
+  }
+
+  function generisiIzvjestaj(format) {
+    const f = typeof format === 'string' ? format.trim().toLowerCase() : '';
+    const podaci = mjerenja.map((m) => ({
+      id: m.id,
+      energent: m.energent,
+      kolicina: m.kolicina,
+      datum: formatirajISO(m.datum),
+      incident: m.incident
+    }));
+
+    if (f === 'json') return JSON.stringify(podaci);
+    if (f === 'csv') {
+      const zaglavlje = ['id'].concat(KOLONE);
+      const redovi = podaci.map((p) => zaglavlje.map((k) => csvPolje(p[k])).join(','));
+      return [zaglavlje.join(',')].concat(redovi).join('\n');
+    }
+    return '';
+  }
+
+  function uporedi(a, b) {
+    if (typeof a === 'string') return a.localeCompare(b);
+    return Number(a) - Number(b); // brojevi, Date (timestamp) i bool (false < true)
+  }
+
+  // Stabilno: kod jednakih ključeva odlučuje originalni indeks.
+  function sortirajMjerenja(kljuc, smjer) {
+    const kopije = mjerenja.map(kopija);
+    if (!KOLONE.includes(kljuc)) return kopije;
+    const znak = smjer === 'desc' ? -1 : 1;
+    return kopije
+      .map((m, indeks) => ({ m, indeks }))
+      .sort((a, b) => znak * uporedi(a.m[kljuc], b.m[kljuc]) || a.indeks - b.indeks)
+      .map((par) => par.m);
+  }
+
+  function grupisiPoDanu() {
+    const grupe = {};
+    mjerenja.forEach((m) => {
+      const kljuc = formatirajISO(m.datum);
+      if (!grupe[kljuc]) grupe[kljuc] = [];
+      grupe[kljuc].push(kopija(m));
+    });
+    const rezultat = {};
+    Object.keys(grupe).sort().forEach((kljuc) => {
+      rezultat[kljuc] = grupe[kljuc];
+    });
+    return rezultat;
+  }
+
+  // ---------- Javne metode: dodatno (Zadatak 4) ----------
+  function brojDanaIzmedju(od, doDatuma) {
+    const MS_U_DANU = 24 * 60 * 60 * 1000;
+    const a = Date.UTC(od.getFullYear(), od.getMonth(), od.getDate());
+    const b = Date.UTC(doDatuma.getFullYear(), doDatuma.getMonth(), doDatuma.getDate());
+    return Math.round((b - a) / MS_U_DANU);
+  }
+
+  // Linearna regresija (metoda najmanjih kvadrata) na mjerenjima iz zadnjih 30 dana.
+  function prognozirajPotrosnju(energent, brojDana) {
+    const e = typeof energent === 'string' ? energent.trim().toLowerCase() : '';
+    const dana = Number(brojDana);
+    if (!Number.isInteger(dana) || dana <= 0) return [];
+
+    const danas = new Date();
+    const pocetak = new Date(danas.getFullYear(), danas.getMonth(), danas.getDate() - 30);
+    const kraj = new Date(danas.getFullYear(), danas.getMonth(), danas.getDate() + 1);
+    const tacke = mjerenja
+      .filter((m) => m.energent === e && m.datum >= pocetak && m.datum < kraj)
+      .map((m) => ({ x: brojDanaIzmedju(pocetak, m.datum), y: m.kolicina }));
+    if (tacke.length < 2) return [];
+
+    const n = tacke.length;
+    const sumaX = tacke.reduce((s, t) => s + t.x, 0);
+    const sumaY = tacke.reduce((s, t) => s + t.y, 0);
+    const sumaXY = tacke.reduce((s, t) => s + t.x * t.y, 0);
+    const sumaXX = tacke.reduce((s, t) => s + t.x * t.x, 0);
+    const imenilac = n * sumaXX - sumaX * sumaX;
+    const nagib = imenilac === 0 ? 0 : (n * sumaXY - sumaX * sumaY) / imenilac;
+    const odsjecak = (sumaY - nagib * sumaX) / n;
+
+    const prognoza = [];
+    for (let i = 1; i <= dana; i++) {
+      const datum = new Date(danas.getFullYear(), danas.getMonth(), danas.getDate() + i);
+      const x = brojDanaIzmedju(pocetak, datum);
+      prognoza.push({ datum, kolicina: Math.max(0, zaokruzi(odsjecak + nagib * x)) });
+    }
+    return prognoza;
+  }
+
   // ---------- Inicijalizacija ----------
   ucitajIzTabele();
 
@@ -301,7 +457,15 @@ function Evidencija(tabelaRef, opcije) {
     dodajMjerenje,
     ukloniMjerenje,
     azurirajMjerenje,
-    brojMjerenja
+    brojMjerenja,
+    dajUkupnuEmisiju,
+    dajStatistikuPoEnergentu,
+    prosjecnaPotrosnja,
+    detektujAnomalije,
+    generisiIzvjestaj,
+    sortirajMjerenja,
+    grupisiPoDanu,
+    prognozirajPotrosnju
   });
 }
 
