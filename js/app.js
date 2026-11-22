@@ -70,6 +70,15 @@
     });
 
     // ---------- Forma ----------
+    // Dozvoljeni datumi su samo iz tekuće godine (min/max se postavljaju dinamički).
+    function postaviGraniceDatuma() {
+      const poljeDatum = forma.elements.datum;
+      if (!poljeDatum) return;
+      const godina = new Date().getFullYear();
+      poljeDatum.min = `${godina}-01-01`;
+      poljeDatum.max = `${godina}-12-31`;
+    }
+
     function parsirajDatumIzPolja(vrijednost) {
       const dijelovi = /^(\d{4})-(\d{2})-(\d{2})$/.exec(vrijednost);
       return dijelovi ? new Date(+dijelovi[1], +dijelovi[2] - 1, +dijelovi[3]) : null;
@@ -125,6 +134,7 @@
     });
 
     // ---------- Početno stanje ----------
+    postaviGraniceDatuma();
     tabela.querySelectorAll('tbody tr[data-id]').forEach(dodajDugmeBrisanja);
     azurirajKartice();
   }

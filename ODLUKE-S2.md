@@ -22,11 +22,11 @@ Isto radim i pri unosu: `parsirajDatum` vraća novi `Date` umjesto da sačuva ob
 
 ## 3. aria-live="polite"
 
-`#poruke` prikazuje potvrdu ili greške poslije slanja forme. To nije hitno, pa je `polite` dovoljan: čitač ekrana pročita poruku kad završi ono što trenutno čita. `assertive` bi prekinuo korisnika usred čitanja i služi samo za hitna upozorenja. Kod grešaka ionako prebacujem fokus na pogrešno polje, pa korisnik odmah zna gdje je problem.
+`#poruke` prikazuje potvrdu ili greške poslije slanja forme. To nije hitno, pa je `polite` dovoljan. Čitač ekrana pročita poruku kad završi ono što trenutno čita. `assertive` bi prekinuo korisnika usred čitanja i služi samo za hitna upozorenja. Kod grešaka ionako prebacujem fokus na pogrešno polje, pa korisnik odmah zna gdje je problem.
 
 ## 4. Debounce
 
-Bez debounce-a, brzi dupli klik na „Spremi" (ili Enter + klik) okine `submit` dva puta. Tako se isto mjerenje doda dvaput, sa dva reda u tabeli i duplom emisijom na karticama. U `app.js` (linije 118–125) prvo slanje se obradi odmah, a svako sljedeće u narednih 300 ms se ignoriše.
+Bez debounce-a, brzi dupli klik na „Spremi" okine `submit` dva puta. Tako se isto mjerenje doda dvaput, sa dva reda u tabeli i duplom emisijom na karticama. U `app.js` prvo slanje se obradi odmah, a svako sljedeće u narednih 300 ms se ignoriše.
 
 Bez JavaScript-a forma bi se poslala serveru i stranica bi se ponovo učitala. Preglednik tada sam prekida prethodni zahtjev pri novom slanju, pa klijentski debounce nema smisla. Duplikate bi tada morao spriječiti server.
 
